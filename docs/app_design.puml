@@ -1,0 +1,34 @@
+@startuml app_design
+
+title "Overview of App Design"
+footer Alex Kuhn | %date("yyyy-MM-dd")
+
+!include  https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+
+System_Boundary(subscription, "Game Whiz Subscription") {
+    Container(web, "Web App", "React")
+    ContainerQueue(backend, "Backend Service", "Python")
+    ContainerDb(ai_search, "Vector Storage", "AI Search")
+    ContainerQueue(ingestion, "Data Ingestion Service", "Python")
+    ContainerDb(storage, "Storage Account", "sa-game-whiz")
+}
+System_Boundary(openai, "OpenAI") {
+    Container(completions, "Chat Completions", "GPT-o1")
+    Container(embeddings, "Embeddings", "ada")
+}
+Container(pdfs, "Game Rule Books", "PDFs")
+
+Rel_R(pdfs, storage, "PDFs stored in Azure Blob Storage")
+Rel(storage, ingestion, "process PDFs")
+BiRel_L(ingestion, embeddings, "generate embeddings")
+Rel(ingestion, ai_search, "store vectors")
+Rel(user, web, "submits question about a board game")
+Rel(web, backend, "sends question to backend")
+Rel(backend, ai_search, "searches for similar questions")
+Rel(backend, embeddings, "generates embeddings")
+Rel(backend, completions, "generates completions")
+Rel(backend, web, "sends completions to UI")
+
+@enduml
